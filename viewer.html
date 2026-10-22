@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lorry Spray House AR</title>
+<script type="module" src="model-viewer.min.js"></script>
+<style>
+  :root{
+    --bg:#10181c; --panel:#18232a; --line:#2c3b44; --ink:#e8f0f3; --mute:#9db0ba;
+    --accent:#3d8bff; --ok:#2fb36d;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink)}
+  body{display:flex;flex-direction:column}
+  header{padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-left,0px)) 10px max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line)}
+  header h1{margin:0;font-size:17px;font-weight:700}
+  header p{margin:2px 0 0;font-size:12.5px;color:var(--mute)}
+  main{position:relative;flex:1;min-height:0}
+  model-viewer{width:100%;height:100%;--poster-color:var(--bg);background:radial-gradient(circle at 50% 35%,#233440,#10181c 70%)}
+  .loading{position:absolute;left:0;right:0;top:45%;text-align:center;color:var(--mute);font-size:14px;pointer-events:none}
+  .loading[hidden]{display:none}
+  .sheet{padding:12px max(16px,env(safe-area-inset-left,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));background:var(--panel);border-top:1px solid var(--line);display:grid;gap:10px}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px}
+  .seg button{border:0;border-radius:7px;background:transparent;color:var(--mute);font:600 14px/1 inherit;font-family:inherit;padding:11px 8px;min-height:42px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+  .ar{display:block;width:100%;border:0;border-radius:10px;background:var(--accent);color:#fff;font:700 16px/1 inherit;font-family:inherit;padding:16px;min-height:52px;cursor:pointer}
+  .ar:disabled{background:var(--line);color:var(--mute);cursor:default}
+  .note{margin:0;font-size:12.5px;line-height:1.45;color:var(--mute)}
+  .dims{margin:0;line-height:1.5;font-size:12.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+  .dims b{color:var(--ink)}
+  button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Lorry Spray House</h1>
+  <p>Simple viewer</p>
+</header>
+
+<main>
+  <model-viewer id="mv"
+    src="site_simple.glb"
+    alt="3D model of the lorry spray house with a lorry driving through the tunnel"
+    ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" ar-placement="floor"
+    camera-controls touch-action="pan-y" camera-orbit="-35deg 70deg auto"
+    shadow-intensity="0.8" shadow-softness="1" exposure="1.05"
+    xr-environment>
+  </model-viewer>
+  <div class="loading" id="loading">Loading model…</div>
+</main>
+
+<section class="sheet">
+  <button type="button" class="ar" id="arBtn">View life-size in AR</button>
+  <p class="dims" id="dims">Measuring model…</p>
+  <p class="note" id="note">On your phone, tap the blue button, point the camera at a flat floor and move it slowly until the model appears. The model is locked to 1:1 scale. Drag to move it, twist two fingers to turn it. For exact alignment with two real points, use the main page on an Android phone.</p>
+</section>
+
+<script>
+(function(){
+  var mv=document.getElementById('mv'), loading=document.getElementById('loading'),
+      dims=document.getElementById('dims'), note=document.getElementById('note'),
+      b1=null;
+  function f(v){return v.toFixed(2)+' m';}
+  mv.addEventListener('load',function(){
+    loading.hidden=true;
+    var d=mv.getDimensions();
+    dims.innerHTML='Model footprint: <b>'+f(d.x)+'</b> long × <b>'+f(d.z)+'</b> wide. Spray house slab <b>5.00 × 4.30 m</b>, <b>6.45 m</b> high.';
+  });
+  mv.addEventListener('progress',function(e){
+    var p=e.detail.totalProgress; if(p<1){loading.hidden=false;loading.textContent='Loading model… '+Math.round(p*100)+'%';}
+  });
+  mv.addEventListener('error',function(){loading.hidden=false;loading.textContent='Model failed to load. Check that the .glb files are next to this page.';});
+  // AR button only works on a phone/tablet with AR support, over HTTPS.
+  var arBtn=document.getElementById('arBtn');
+  arBtn.addEventListener('click',function(){ if(mv.canActivateAR) mv.activateAR(); });
+  setTimeout(function(){
+    if(!mv.canActivateAR){
+      arBtn.disabled=true; arBtn.textContent='AR not available on this device';
+      note.textContent='AR needs a phone or tablet. Open this same link on your phone (it must be an https:// link). On a computer you can still rotate and zoom the model.';
+    }
+  },1500);
+})();
+</script>
+</body>
+</html>
