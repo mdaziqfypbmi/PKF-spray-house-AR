@@ -36,7 +36,7 @@
 <body>
 <header>
   <h1>Lorry Spray House</h1>
-  <p>Simple viewer</p>
+  <p>Simple viewer: place it on the floor, then drag and twist it</p>
 </header>
 
 <main>
@@ -53,15 +53,19 @@
 
 <section class="sheet">
   <button type="button" class="ar" id="arBtn">View life-size in AR</button>
+  <div class="seg" role="group" aria-label="Model">
+    <button type="button" id="b1" aria-pressed="true">With lorry</button>
+    <button type="button" id="b2" aria-pressed="false">House only</button>
+  </div>
   <p class="dims" id="dims">Measuring model…</p>
-  <p class="note" id="note">On your phone, tap the blue button, point the camera at a flat floor and move it slowly until the model appears. The model is locked to 1:1 scale. Drag to move it, twist two fingers to turn it. For exact alignment with two real points, use the main page on an Android phone.</p>
+  <p class="note" id="note">On your phone, tap the blue button, point the camera at a flat floor and move it slowly until the model appears. The model is locked to 1:1 scale. Drag to move it, twist two fingers to turn it. Choose With lorry or House only before you tap the AR button.</p>
 </section>
 
 <script>
 (function(){
   var mv=document.getElementById('mv'), loading=document.getElementById('loading'),
       dims=document.getElementById('dims'), note=document.getElementById('note'),
-      b1=null;
+      b1=document.getElementById('b1'), b2=document.getElementById('b2');
   function f(v){return v.toFixed(2)+' m';}
   mv.addEventListener('load',function(){
     loading.hidden=true;
@@ -72,6 +76,13 @@
     var p=e.detail.totalProgress; if(p<1){loading.hidden=false;loading.textContent='Loading model… '+Math.round(p*100)+'%';}
   });
   mv.addEventListener('error',function(){loading.hidden=false;loading.textContent='Model failed to load. Check that the .glb files are next to this page.';});
+  function pick(btn,other,src){
+    btn.setAttribute('aria-pressed','true'); other.setAttribute('aria-pressed','false');
+    loading.hidden=false; loading.textContent='Loading model…'; dims.textContent='Measuring model…';
+    mv.src=src;
+  }
+  b1.addEventListener('click',function(){pick(b1,b2,'site_simple.glb');});
+  b2.addEventListener('click',function(){pick(b2,b1,'site_house_only.glb');});
   // AR button only works on a phone/tablet with AR support, over HTTPS.
   var arBtn=document.getElementById('arBtn');
   arBtn.addEventListener('click',function(){ if(mv.canActivateAR) mv.activateAR(); });
